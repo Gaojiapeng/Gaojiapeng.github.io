@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExoplanetML — Exoplanet Classification Using Machine Learning - Final Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; */
+            line-height: 1.25;
+            color: #e8e8e8;
+            background: #000;
+            overflow-x: hidden;
+            padding-top: 70px; /* Added for navbar */
+        }
+
+        /* Navigation Bar Styles - START */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(106, 159, 255, 0.3);
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .navbar-brand {
+            color: #fff;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-decoration: none;
+            text-shadow: 0 0 20px rgba(106, 159, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: #8aaeff;
+            text-shadow: 0 0 30px rgba(106, 159, 255, 0.9);
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 0;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-item {
+            margin: 0;
+        }
+
+        .navbar-link {
+            display: block;
+            padding: 25px 30px;
+            color: #d0e0ff;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .navbar-link:hover {
+            color: #fff;
+            background: rgba(106, 159, 255, 0.1);
+            border-bottom-color: #6a9fff;
+        }
+
+        .navbar-link.active {
+            color: #fff;
+            background: rgba(106, 159, 255, 0.2);
+            border-bottom-color: #6a9fff;
+            text-shadow: 0 0 15px rgba(106, 159, 255, 0.8);
+        }
+        /* Navigation Bar Styles - END */
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('../../assets/astro/milky-way-sky-inner-mongolia-2023.jpg') center center/cover no-repeat;
+            z-index: -2;
+            transition: filter 0.3s ease;
+        }
+
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 20, 0.1);
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            color: #fff;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(106, 159, 255, 0.8), 0 2px 10px rgba(0, 0, 0, 0.8);
+            animation: fadeInDown 1s ease;
+        }
+
+        .hero .subtitle {
+            color: #d0e0ff;
+            font-size: 1.5em;
+            font-style: italic;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        .hero .team {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .hero .team-member {
+            color: #fff;
+            font-size: 1.3em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .hero .team-member strong {
+            color: #8aaeff;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 0.9em;
+            font-style: normal;
+            animation: bounce 2s infinite;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        .content-section {
+            position: relative;
+            z-index: 1;
+            background: transparent;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .content-box {
+            /* background: rgba(0, 0, 0, 0.75); */
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(106, 159, 255, 0.2);
+        }
+
+        h2 {
+            /* color: #6a9fff; */
+            color: #11268f;
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #11268f;
+            padding-bottom: 8px;
+        }
+
+        h2:first-child {
+            margin-top: 0;
+        }
+
+        h3 {
+            /* color: #8aaeff; */
+            color: #2239af;
+            font-size: 1.5em;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        h4 {
+            /* color: #8aaeff; */
+            color: #2239af;
+            font-size: 1.3em;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        h5 {
+            /* color: #8aaeff; */
+            color: #2239af;
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-align: justify;
+            /* color: #2d2d2f; */
+            color: #000;
+        }
+
+        table {
+            width: 80%;
+            display: table;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+            /* margin: 20px 20px; */
+            /* background: rgba(20, 20, 40, 0.6); */
+            background: rgba(252, 252, 252, 0.768);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: rgba(3, 57, 156, 0.34);
+            /* color: #6a9fff; */
+            color: #000000;
+            padding: 5px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(106, 159, 255, 0.1);
+            color: #000000;
+            text-align: center;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* tr:hover {
+            background: rgba(106, 159, 255, 0.1);
+        } */
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: #000000;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: #000;
+        }
+
+        .gantt-placeholder {
+            background: rgba(255, 253, 253, 0.6);
+            padding: 40px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            color: #a8c0e0;
+            font-style: italic;
+            border: 2px dashed rgba(106, 159, 255, 0.3);
+        }
+
+        .dimmed .background {
+            filter: blur(5px) brightness(0.9);
+        }
+
+        .dimmed .background-overlay {
+            background: rgba(0, 0, 20, 0.2);
+        }
+
+        a {
+            color: #2239af;
+            text-decoration: underline;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile responsive - START */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 120px;
+            }
+
+            .navbar-container {
+                flex-direction: column;
+                height: auto;
+                padding: 15px 20px;
+            }
+            
+            .navbar-brand {
+                margin-bottom: 10px;
+                font-size: 1.1em;
+            }
+            
+            .navbar-menu {
+                flex-direction: row;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .navbar-link {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar-link {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+        }
+        /* Mobile responsive - END */
+    </style>
+    <link rel="stylesheet" href="site-integration.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar" aria-label="ExoplanetML project reports">
+        <div class="navbar-container">
+            <a href="../../index.html#exoplanetml" class="navbar-brand">← Jiapeng Gao · ExoplanetML</a>
+            <ul class="navbar-menu">
+                <li class="navbar-item">
+                    <a href="index.html" class="navbar-link" id="nav-proposal">Proposal</a>
+                </li>
+                <li class="navbar-item">
+                    <a href="midterm.html" class="navbar-link" id="nav-midterm">Midterm Report</a>
+                </li>
+                <li class="navbar-item">
+                    <a href="final.html" class="navbar-link active" id="nav-final" aria-current="page">Final Report</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="background"></div>
+    <div class="background-overlay"></div>
+
+    <div class="hero">
+        <h1>Machine Learning for Exoplanet Classification</h1>
+        <p class="subtitle">Final Report</p>
+        
+<!--         <p class="subtitle">Final Report</p> -->
+         
+        <p class="project-lead"><strong>Group Project Leader:</strong> Jiapeng Gao</p>
+        <div class="team">
+            <div class="team-member">
+                <strong>Team Members:</strong> Jiapeng Gao, Melvin Ticiano Gao, Ruishu Cao, Tanya Chauhan, Yishu Ji
+            </div>
+        </div>
+        <div class="team">
+            <div class="team-member">
+                <strong>Course:</strong> CS 7641 - Machine Learning
+            </div>
+            <div class="team-member">
+                <strong>Date:</strong> Fall 2025
+            </div>
+        </div>
+
+        <p class="project-photo-credit">Milky Way · Inner Mongolia · <time datetime="2023-08-13T00:16:14">13 August 2023 · 00:16:14</time> (camera time)<br>Photographed by Jiapeng Gao</p>
+        <div class="scroll-indicator">
+            ↓ Scroll Down ↓
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="container">
+            <div class="content-box">
+                <h2>Introduction/Background</h2>
+                <p>
+                    51 Pegasi b, the first exoplanet discovered around a main-sequence star in 1995 [1], surprised astronomers because it's a planet that does not look like any planet in our solar system. People call it a "hot Jupiter", based on its orbital period and mass.  This is not the only exotic exoplanet people have found. Since then, approximately 6,000 exoplanets [2] have been discovered, and many of them still lack counterparts to our solar system's planets. The "period, mass" classification scheme is straightforward, but it only accounts for two features of the planets. Until today, no standardized exoplanet classification scheme has been widely accepted. Therefore, we want to use unsupervised ML to create a standardized classification algorithm for exoplanets. 
+                </p>
+                <p>
+                    The main dataset we will use is the Kepler Objects of Interest (KOI) table. It is built on planet transit data from the Kepler telescope. The KOI database is a good start for our unsupervised learning. 
+                </p>
+                <p>
+                    It is also notable that the KOI dataset has classified planets as confirmed, candidate, and false positive. This is where we want the supervised learning model to work on. There has been extensive work on using ML, including CNNs and transformers[3][4], to identify false positives. We aim to reproduce and improve on these results.
+                </p>
+                <h3>Dataset Links</h3>
+                <ul>
+                    <li><a href="https://exoplanetarchive.ipac.caltech.edu/docs/Kepler_Data_Products_Overview.html#lc_rel" target="_blank">Kepler data products overview</a></li> 
+                    <li><a href="https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=cumulative" target="_blank">Kepler Objects of Interest (KOI) table</a></li>
+                    <li><a href="https://exoplanetarchive.ipac.caltech.edu/index.html" target="_blank">Exoplanet archive</a></li>
+                    
+                
+                </ul>
+
+                <h2>Problem Definition</h2>
+                <p>
+                    How to use ML to discover subgroups of exoplanets? How can ML help identify more exoplanet candidates or false positives? The confirmation of exoplanets, and also the classification of exoplanets, has long been a subjective and case-by-case job. This calls for the use of ML algorithms to group planets by statistics when little physics prior knowledge can be provided, and identify false positives when subsequent observations are not yet available. 
+                </p>
+
+                <h2>Methods</h2>
+
+                <h3>1 Data Preprocessing</h3>
+                <h4>1.1 The Exoplanet Archive</h4>
+                <p>
+                    Though we have proposed to use the Kepler dataset for classifying exoplanets, it was found to be improper for this mission, because it lacks a variety of exoplanets. Kepler only measures the transiting planets, meaning that it has a strong preference for close-in planets. Therefore, not many planet clusters can be found using the pure Kepler dataset. We decided to use the Exoplanet Archive, which is also listed in the proposal.
+                </p>
+                <p>
+                    We first choose proper features from the dataset for clustering exoplanets. Considering that many features are incomplete, we choose the most complete and also the most important features for exoplanets, which are the planet orbital period (pl_orbper), planet radius (pl_rade), and planet mass (pl_bmasse). We then drop all the data without any of the three features. This brings our dataset size from 6007 rows to 1415 rows. This large dataset size reduction might bring worries about whether the smaller dataset can represent the original dataset. Considering that all three parameters are important to our classification, and we cannot do data imputation here, as it will introduce more unnecessary bias, we have to accept the data size reduction. We will show later that this data reduction does generate results that match previous research. 
+                </p>
+                <p>
+                    We choose not to normalize our data here, as the original physical information is important. Quantities that span multiple orders of magnitude mean that the planets measured with this scale can be essentially different, therefore, cannot be simply normalized. We take the log value of these features instead.
+                </p>
+
+                <h4>1.2 The KOI Tablee</h4>
+                <p>
+                    Based on the work by Rafaih, Murray et al.[1], we selected eight features for our training model, which are koi_period, koi_impact, koi_duration, koi_depth, koi_model_snr, koi_bin_oedp_sig, koi_steff, and koi_srad. These features are selected for their physical interpretability and their representation of low-level planetary parameters. The predicted feature is koi_pdisposition, which includes two categories: CANDIDATE and FALSE POSITIVE.
+                </p>
+
+                <div class="report-table" tabindex="0" role="region" aria-label="Report table"><table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 1em; text-align: left; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+                <thead style="background-color: #f4f4f4;">
+                    <tr>
+                    <th style="padding: 12px 15px; border-bottom: 2px solid #ddd;">Feature</th>
+                    <th style="padding: 12px 15px; border-bottom: 2px solid #ddd;">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">koi_period</td>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">Represents the orbital period (days) of the potential exoplanet — the interval between consecutive planetary transits.</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">koi_impact</td>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">Calculated impact parameter, measuring the perpendicular distance between the center of the star and the planet’s orbit.</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">koi_duration</td>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">Duration (hours) from the planet’s first contact with the star until the last contact during transit.</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">koi_depth</td>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">Fractional decrease in the star’s brightness during a planetary transit.</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">koi_model_snr</td>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">Transit signal-to-noise ratio, representing the strength of the observed transit signal.</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">koi_bin_oedp_sig</td>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">Significance of the difference between odd and even transit depths in binned data.</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">koi_steff</td>
+                    <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">Star’s effective temperature (Kelvin).</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 10px 15px;">koi_srad</td>
+                    <td style="padding: 10px 15px;">Star’s radius (in solar radii).</td>
+                    </tr>
+                </tbody>
+                </table></div>
+
+                <figcaption style="text-align: center; font-size: 0.95em; color: #555; margin-top: 8px;">
+                <strong>Table 1.</strong> Description of selected KOI (Kepler Object of Interest) features.
+                </figcaption>
+
+                <p></p> 
+                <p>
+                    The raw dataset has 9564 rows. Among the eight selected features, koi_bin_oedp_sig has the highest percentage of missing values, approximately 16%. The features koi_impact, koi_depth, koi_model_snr, koi_steff, and koi_srad each have around 3.8% missing values. After experimentation, we decided to drop the missing values rather than input the missing because: a). exoplanet detection requires high precision and reliability, and b). a small imputation bias could introduce significant distortions. Therefore, we remove all records having missing values. The final dataset has 7995 rows, which are ready for model training and testing. 
+                </p>
+                <p>
+                    We split the dataset into 80% for training and 20% for testing. Before training the model we applied Min-Max Scaling to normalize all features to a range between 0 and 1. Min-Max Scaling can prevent the models from being overly sensitive to large feature scales. Also, it can support faster and more stable model convergence during the training process. 
+                </p>
+                <p>
+                    In terms of evaluation metrics, we focus on precision and recall score for evaluating our supervised machine learning models. Since our positive class is false positive exoplanets, precision tells us among all exoplanets predicated false positives, how many are truly false positives. Recall tells us among all the actual false positive exoplanets, how many are successfully identified. Both of the precision and recall scores are important to our study. To balance these two objectives, we also consider the F1 score, which combines precision and recall into a single metric.
+                </p>
+                <p>
+                    Accuracy might not be the best evaluation metric since our priority is to find false positive exoplanets . A model might have high accuracy, but it gives the equal importance of both false positive and candidate exoplanets. However, our study focuses more on the false positive exoplanets given the objective of reducing the time and resources spent investigating non-real exoplanets. 
+                </p>
+
+                <h4>1.3 The Light Curves [7]</h4>
+                <p>
+                    We chose the Kepler light curves as the dataset for CNN and also unsupervised learning. To process the light curves, we chose to use the “Lightkurve” package. The “Lightkurve” package provides downloads of the Kepler light curves and also tools for processing the light curves. We first download the KOI table, and use the Kepler ID column to search and download the corresponding light curves. One example raw light curve is shown here:
+                </p>
+                
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/light_curve_1.png" 
+                    alt="light_curve_1" 
+                    style="max-width: 70%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 1.</strong> Raw light curve
+                </figcaption>
+                </figure>
+
+                 <p>
+                    The raw light curve is noisy and has long-term trends that need to be canceled. We first remove the outliers. Then, we use the period, transit duration, transit time to find out the transit window, we then exclude the transit window and flatten the light curve to remove long-term trends. After that, we fold the light curve according to the period, and we will get the light curve like this:
+                 </p>
+
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/light_curve_2.png" 
+                    alt="light_curve_2" 
+                    style="max-width: 70%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 2.</strong> Light curve after folding, denoising, and flattening
+                </figcaption>
+                </figure>
+
+                  <p>
+                    Then, we need to bin the light curve into fixed sizes for ML algorithms. Considering the transit signal occupies a small fraction of the full transit curve, we choose to use two different bining methods. One is to bin the whole light curve into 2001 bins, another is to bin the light curve near the transit (+- 4 transit durations) into 201 bins. The result is given below:
+                  </p>
+                  <!-- TODO: figure: Global light curve -->
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/light_curve_3.png" 
+                    alt="light_curve_3" 
+                    style="max-width: 70%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 3.</strong> Global light curve
+                </figcaption>
+                </figure>
+                
+                  <!-- TODO: figure: Local light curve -->
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/light_curve_4.png" 
+                    alt="light_curve_4" 
+                    style="max-width: 70%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 4.</strong> Local light curve
+                </figcaption>
+                </figure>
+
+
+
+                 <h3>2 Supervised learning</h3>
+                 <h4>2.1 Logistic Regression</h4>
+                 <p>
+                   We tested the Logistic Regression algorithm as one of our baseline models for supervised machine learning classification. Logistic Regression is a well-established statistical model that estimates the probability of a binary outcome using a logistic (sigmoid) function. It serves as a simple yet powerful model that provides interpretability through its coefficients, which directly indicate the influence of each feature on the target variable.
+                </p>
+                <p>
+                   Initially, we selected Logistic Regression because of its efficiency, interpretability, and strong performance on linearly separable datasets. It also serves as an excellent benchmark before exploring more complex models such as ensemble methods. Moreover, Logistic Regression supports regularization techniques, which help prevent overfitting and improve generalization performance.
+                </p>
+
+                 <h5>2.1.1 Model Implementation</h5>
+                <p>
+                   The Logistic Regression model works by finding the parameters for each feature to minimize the loss function using optimization process. The model uses a linear combination of input features through the sigmoid function to produce probabilities between 0 and 1, to classify into  binary categories.
+                </p>
+                <p>
+                  We used the Logistic Regression implementation with the default parameters as a baseline model. Based on this initial performance, we performed hyperparameter tuning using GridSearchCV to explore different configurations of key parameters like penalty type (L1 and L2), solver (e.g., liblinear, lbfgs, saga) and regularization strength (C).
+                </p>
+                <p>
+                    We conducted a 5-fold cross-validation during the grid search process to select the optimal combination of hyperparameters based on the ROC-AUC score, which measures the model’s ability to distinguish between classes.
+                </p>
+                <p>
+                    After identifying the best hyperparameters, we retrained the best-performing Logistic Regression model on the full training set and evaluated it on the test set. The performance metrics ( precision, recall, F1-score, and ROC-AUC), were analyzed to assess the final model's prediction. Additionally, this model also provides a list of important features that strongly influence the outcome. This interpretability is one of Logistic Regression’s primary advantages compared to more complex models.
+                </p>
+
+                <h5>2.1.2 Result and Discussion</h5>
+                <p>In our study, identifying false positive exoplanets is the primary objective, as misclassifying them as candidate exoplanets can lead to wasted research efforts. Therefore, we prioritized metrics that emphasize the balance between positive predictions and true outcomes — specifically, Precision, Recall.</p>
+                <p>When trained with default hyperparameters, the Logistic Regression model achieved a <b>Precision of 0.84, Recall of 0.55, Average Precision of 0.82 and ROC_AUC of 0.79.</b> These results indicate that while the model was effective at correctly identifying false positive cases, it struggled to capture all actual false positives. It can be due to  insufficient regularization control.</p>
+                <p>To improve model performance, we conducted hyperparameter tuning using GridSearchCV, using various regularization strength (C), penalty type (L1, L2), and solver methods. When precision was used as the scoring metric, the tuned model achieved a <b>Precision of 0.97, Recall of 0.24, Average Precision of 0.69, and ROC-AUC of 0.61</b>, a decline in overall performance compared to the default configuration. This happened because optimizing strictly for precision hence classifying fewer false positives and thus missing many true cases.</p>
+                <p>When we changed the scoring metric to roc_auc, the model achieved a much better balance, with <b>Precision of 0.78, Recall of 0.67, Average Precision of 0.85, and ROC-AUC of 0.81</b>. The best-performing configuration corresponded to L1 regularization, liblinear solver, and C = 100. This setup improved the model’s Recall from 55% to 67%, F1-score from 67.3% to 72%, and ROC-AUC from 0.79 to 0.81.</p>
+                <p>The improvements can be attributed to the L1 penalty, where less important features are ignored and improving generalization. From the Precision–Recall and ROC curves, the tuned model achieved an <b>average precision of 0.85 and an AUC of 0.81</b>, confirming that it maintains a strong discriminative ability between the two classes. The top five features identified by the model are koi_depth, koi_impact, koi_srad, koi_steff and koi_duration.</p>
+                <p>While the optimized Logistic Regression model demonstrates solid performance, the moderate recall suggests that there may still be complex nonlinear relationships in the data that linear models cannot capture. Therefore, more sophisticated models need to be explored.</p>
+                
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/supervised_figure1.png" 
+                    alt="supervised_figure1" 
+                    style="max-width: 70%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 5.</strong> Logistic Regression model performance
+                </figcaption>
+                </figure>
+
+                <h4>2.2 XGBoost</h4>
+                <p>We tested the XGBoost algorithm since it is an ensemble learning method that combines multiple weak models to form a stronger model. XGBoost uses decision trees as the base learners, which aligns with our original plan to test a single Decision Tree algorithm for supervised machine learning. We transitioned from a single Decision Tree to XGBoost because we found that XGBoost provides greater predictive results. Also, XGBoost has the same capability of revealing feature importance like Decision Tree.</p>
+                
+                <h5>2.2.1 Model Implementation</h5>
+                <p>How the XGBoost algorithm works can be explained as follows. It first constructs a simple decision tree, and each subsequent tree is trained on the errors of the previous tree. Through this iterative process, each tree learns from the mistakes of the previous trees, so the ensemble keeps improving. As a result, XGBoost usually can have more accurate and robust predictions.</p>
+                <p>We use the XGBClassifier from scikit-learn. The default hyperparameters include a tree-based booster (gbtree), a binary:logistic as the objective function, and default learning rate with 0.3. We first train the default model as a baseline. Based on that baseline, we performed hyperparameter tuning to observe if the model’s performance can be improved. We use GridSearchCV to search for the best hyperparameter combinations. We have a focus search on the following parameters, including learning rate, n_estimators, max_depth, min_child_weight, reg_alpha (L1 regularization), and reg_lambda (L2 regularization).</p>
+                <p>We also use five-fold cross-validation during the grid search process. By doing so, we want to find the most reliable and robust parameters for XGBoost. After having the best model parameters, we re-evaluate the best model with cross-validation to verify its consistency before testing. Once we are satisfied with the validation result, we apply the model to the test set to obtain the final evaluation of the best-performing XGBoost model.</p>
+
+                <h5>2.2.2 Result and Discussion</h5>
+                <p>Across our experiments, XGBoost demonstrated consistently strong performance for false positive exoplanet detection. With default hyperparameters, the model already achieved high performance, with <b>88% precision, 85% recall, and 86% F1 score</b>, which outperforms a logistic regression. After hyperparameter optimization, <b>precision further improved to 89% and 87% F1 score</b>. This result indicates that XGBoost is able to preserve a strong balance between precision and recall.</p>
+                <p>The top five features identified by XGBoost are koi_period, koi_duration, koi_impact, koi_model_snr, and koi_srad. These features have clear physical interpretations, including orbital activity, the perpendicular distance between the stellar center and the planet’s trajectory, and the signal-to-noise ratio and stellar radius. The XGBoost algorithm demonstrates its strong ability to classify false positives by using only foundational physical observational data.</p>
+                <p>By reading the Precision–Recall and ROC curves, we found that the XGBoost model achieves an <b>average precision of 0.95 and an AUC of 0.95</b>. These metrics confirm that our model maintains high prediction ability.</p>
+                <p>For the next steps, we will apply neural networks and explore additional features to observe whether we can improve the model’s performance in identifying false positive exoplanets.</p>
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/supervised_figure2.png" 
+                    alt="supervised_figure2" 
+                    style="max-width: 70%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 6.</strong> XGBoost model performance
+                </figcaption>
+                </figure>
+
+                <h4>2.3 Random Forest</h4>
+                <h5>2.3.1 Model Implementation</h5>
+                <p>
+                    We also use the Random Forest algorithm to train and identify possible exoplanet candidates using the KOI dataset.
+                </p>
+                <p>
+                    We restricted the task to a binary classification by maintaining only “Candidate” and “False Positive”. The target variable was mapped with 1 being a candidate and 0 being a false positive. To process the data, all the row entries with missing value in the selected features are removed. The dataset is then split into training and testing sets.
+                </p>
+                <p>
+                    We trained a Random Forest classifier and optimized the parameters using RandomizedSearchCV initially. After we are able to identify a smaller range for the parameters (including features such as tree depth, number of estimators, split criteria), we then do a GridSearchCV to refine the parameter range, narrowing down the best-performing hyperparameters.
+                </p>
+               
+                <h5>2.3.2 Result and Discussion</h5>
+                <p>
+                    The optimized Random Forest model achieved <b>a testing score of 0.88, a recall of 0.87, F1 value of 0.87 and a ROC-AUC value of 0.95</b>. It shows that the model was able to capture the hidden relationship between features and output a strong accuracy percentage. In addition, the ROC-AUC score of 0.95 shows that it is good at distinguishing between true exoplanets and false positives. The ROC curve also shows that the classifier is able to achieve high true-positive rates with a relative low false-positive rate. Furthermore, running random forest algorithm on the dataset shows that the five most important features are koi_period, koi_depth, koi_impact, koi_duration and koi_model_snr. Overall, the result shows that random forest is a strong algorithm in detecting exoplanets and separating out the false positives.
+                </p>
+
+                <!-- TODO: Figure 7. Random Forest model performance -->
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/supervised_figure_3.png" 
+                    alt="supervised_figure_3" 
+                    style="max-width: 40%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 7.</strong> Random Forest model performance
+                </figcaption>
+                </figure>
+
+                <h4>2.4 Convolutional Neural Networks(CNN) [7]</h4>
+                <p>
+                    Since lightcurve data provides the periodic brightness variations caused by planetary transits, we will apply deep learning, basically neural networks to see if it can help us identify false positive exoplanets. 
+                </p>
+                <h5>2.4.1 Model Implementation</h5>
+                <p>
+                    We develop a dual-branch, one-dimensional CNN for binary classification of exoplanets. The network is designed to capture both global and local structure in light curves. The global branch analyzes the entire light curve, which allows the model to learn broader patterns such as long-term stellar variability and baseline trends. In contrast, the local branch focuses on fine-grained features such as the depth, shape, and duration of the dip.
+                </p>
+                <p>
+                    In the global branch, the first layer applies 16 filters with a kernel size of 7 and padding of 3. This is followed by batch normalization, a GELU activation, and max pooling with a stride of 4 to reduce the sequence length. The second layer increases the number of filters to 32 and uses a smaller kernel size of 5 with padding of 2. This is again followed by batch normalization, GELU, and another max pooling with a stride of 4. We decided to apply GELU activation since it is smoother compared to RELU, which has a hard corner 0 when input is negative. This architecture allows the network to learn temporal features at multiple scales, meanwhile it keeps the model compact and efficient.
+                </p>
+                <p>
+                    In the local branch, we use a similar architecture to the global branch. There are two convolutional layers, but we use a smaller kernel size of 5, padding of 2, and max pooling with a factor of 2. The purpose is to preserve higher temporal resolution rather than aggressively downsample the data.
+                </p>
+               
+                <h5>2.4.2 Result and Discussion</h5>
+                <p>
+                    After training five epochs, the model demonstrated strong performance. It achieves a <b>precision of 0.81, a recall of 0.82, and an F1 score of 0.82</b>. Additionally, its <b>ROC AUC value of 0.91</b>, which indicates that the CNN model is highly effective at distinguishing between the two classes. 
+                </p>
+                <!-- TODO: Figure 8. CNN model performance -->
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/supervised_figure_4.png" 
+                    alt="supervised_figure_4" 
+                    style="max-width: 65%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 8.</strong> CNN model performance
+                </figcaption>
+                </figure>
+
+                <h3>3 Unsupervised Machine Learning</h3>
+                <h4>3.1 HDBSCAN (for the Exoplanet Archive Data)</h4>
+                <p>
+                    For the classification algorithm, we finally chose HDBSCAN. The GMM, K-means do not perform well because the exoplanet distribution is neither circular nor Gaussian. We need a classification algorithm that is based on density. DBSCAN is a good density-based algorithm; however, it requires specification of epsilon, which may differ for different exoplanet clusters. Therefore, we use the HDBSCAN algorithm, which is a hierarchical method that is able to deal with clusters with different densities.
+                </p>
+                
+                <h5>3.1.1 Model Implementation</h5>
+                <p>We use the HDBSCAN Clustering Library developed by McInnes et al., 2017 [5]. The parameters are set as follows: min_cluster_size=10, min_samples=5, cluster_selection_epsilon=0, metric='manhattan'. We want a small minimum cluster size since there are some exoplanet clusters that are small. We chose the minimum samples to be 5, as it is moderate. We do not want to merge any clusters; therefore, we keep cluster_selection_epsilon as 0. We use the Manhattan metric as we are already dealing with the log of features; therefore Manhattan metric will take the multiplication of features as the distance, which might reveal hidden power laws in the dataset.</p>
+                
+                <h5>3.1.2 Result and Discussion</h5>
+                <p>The clustering result is shown in Figures 9 and 10. The clustering method classifies exoplanets into 5 groups, excluding the noise points. We have labeled each group with the classification group names already in use by astronomers. We notice that the HDBSCAN method can successfully identify the largest groups, including Hot/Cold Jupiters, and Neptunes/Super Earths. Surprisingly, the Neptunian Ridge planets are revealed as purple points. This is a recent discovery by Carlos et al., 2024 [6], as shown in Figure 11. These Neptune ridge planets are not Hot Jupiters nor normal Neptunes. People are suggesting that they are Neptune-sized planets that experienced high eccentricity migration.</p>
+                <p>In Figure 9, we can better understand how HDBSCAN classified those planets. Figure 10 is plotted based on planet radius and planet mass, therefore demonstrating planet interior properties. The slope changes for different clusters, indicating that they have different mass-to-radius relations. This different M to R relation differentiates rocky planets (super earths) from Neptune-sized and Jupiter-sized planets.</p>
+                <p>The <b>Silhouette Coefficient without the noise points is 0.461</b>, and <b>with noise points is 0.082</b>. The <b>density-based cross-validation (DBCV) gives -0.171</b>. This is expected as exoplanets have a wide and noisy distribution. The most important information we obtained from the classification algorithm is that it has the potential to discover new groups of exoplanets. More detailed investigation into subgroups would require including more features, which will be challenging as more features mean we will have fewer rows and clusters will be more sparse, thus difficult to classify. Therefore, we do not plan to do more experiments on using the unsupervised learning model on the Exoplanet Archive data. We will start testing the unsupervised learning model on the new light curve data from the Kepler dataset, which will be discussed in the Next Steps section.</p>
+                
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/unsupervised_figure1.png" 
+                    alt="unsupervised_figure1" 
+                    style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 9.</strong> HDBSCAN clustering results on the orbital period, planet radius plane.
+
+                </figcaption>
+                </figure>
+
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/unsupervised_figure2.png" 
+                    alt="unsupervised_figure2" 
+                    style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 10.</strong> HDBSCAN clustering results on the plane mass, planet radius plane.
+
+                </figcaption>
+                </figure>
+
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/unsupervised_figure3.png" 
+                    alt="unsupervised_figure3" 
+                    style="max-width: 50%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 11.</strong> New exoplanet population analysis from Castro et al. 2024. [6]
+
+                </figcaption>
+                </figure>
+
+                <h4>3.2 Multiple Algorithms (for The Light Curve Data)</h4>
+                <p>
+                    After testing our models on KOI dataset, we want to apply those models on raw light curve data to evaluate the model performance on unprocessed observations. 
+                </p>
+                
+                <h5>3.2.1 Model Implementation</h5>
+                <p>
+                    After data preprocessing, we start with unsupervised models-K means, GMM and DBSCAN- to classify the light curve data into clusters of Candidate and False positive. To reduce the dimensionality of the data, PCA was applied by selecting 20 features. Evaluation metrics like purity, ARI (Adjusted Rand Index), NMI (Normalized mutual information) were used because we have true labels.
+                </p>
+                <!-- TODO:  Figure 12. KMeans model performance (2 PCA components)-->
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/unsupervised_figure_4.png" 
+                    alt="unsupervised_figure4" 
+                    style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 12.</strong> KMeans model performance (2 PCA components)
+                </figcaption>
+                </figure>
+
+                <!-- TODO:  Figure 13. GMM model performance (2 PCA components)-->
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/unsupervised_figure_5.png" 
+                    alt="unsupervised_figure5" 
+                    style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 13.</strong> GMM model performance (2 PCA components)
+                </figcaption>
+                </figure>
+
+                <!-- TODO:  Figure 14. DBSCAN model performance (2 PCA components)-->
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="Result/unsupervised_figure_6.png" 
+                    alt="unsupervised_figure6" 
+                    style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                <figcaption style="margin-top: 8px; font-size: 0.95em; color: #181818;">
+                    <strong>Figure 14.</strong> DBSCAN model performance (2 PCA components)
+                </figcaption>
+                </figure>
+
+                <h5>3.2.2 Result and Discussion</h5>
+                <p>
+                    By visualizing the result, K-means, GMM and DBSCAN has done some clustering for the light curve data, but the purity index tells that GMM has performed better, likely because it can soft cluster and model elliptical and noisy clusters. Having a low ARI value for all the three models indicates that the clusters did not align well with the true labels. This poor performance was mainly due to the fact that the selected features didn’t capture enough of the data’s variability. Given these limitations, it's clear that unsupervised learning alone isn’t sufficient for this task. Reasons why unsupervised did not work here:
+                </p>
+                <p>
+                    1. Curse of dimensionality: As introduced earlier, light-curve data is derived from stellar brightness measurements over time, which results in a large number of features and variables. Consequently, the dataset suffers from the well-known curse of dimensionality: as the number of features increases, the data becomes sparse and the distance between samples lose discriminative power. Since most unsupervised algorithms depend on meaningful distance or density structures, this high-dimensional feature space makes it difficult to identify coherent groups. As a result, the model fails to form stable clusters and instead becomes strongly influenced by noise and irrelevant variation.
+                </p>
+                <p>
+                    2. Low signal to noise ratio: Stellar brightness measurements often contain large observational noise relative to the true variability.
+                </p>
+                <p>
+                    3. Cluster overlapping: Difference between the features of candidate and false positive is small and generally overlap.
+                </p>
+                <p>
+                    Unsupervised learning cannot capture that difference due to lack of labels and hence it becomes difficult for it to be classified.  Moreover, data is noisy and overlaps a lot, it makes unsupervised models like K-Means, GMM, DBSCAN difficult to form meaningful clustering. It was observed that PCA helped with the curse of dimensionality but it cannot eliminate it because of data being subtle due to which variance of important features were low. Because of this, we require a model that can understand the relation between input and output. Therefore, supervised learning would be better.
+                </p>
+
+                <h2>Result Analysis and Discussion</h2>
+                <p> 
+                    We have demonstrated that the unsupervised learning method HDBSCAN can effectively cluster the exoplanet archive data into groups that correspond to the current classification used by astronomers. The method can even discover some subtle structures, such as the “Hot Neptunian Ridge”. However, due to the noisy data, the classification cannot go further and provide us now classifications.
+                </p>
+                <p>
+                    We then look at the results of unsupervised learning methods applied to light curves, which are shown below. Neither K-means. GMM, or DBSCAN performs well. This is expected, as the dimension of the light curve data is high, thus causing the distance measure to fail.
+                </p>
+                <!-- TODO: Table 2. Performance comparison across unsurpervised learning -->
+                <div class="report-table" tabindex="0" role="region" aria-label="Report table"><table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Purity</th>
+                            <th>ARI</th>
+                            <th>NMI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>K-Means</td>
+                            <td>0.55</td>
+                            <td>0.01</td>
+                            <td>0.005</td>
+                        </tr>
+                        <tr>
+                            <td>GMM</td>
+                            <td>0.6</td>
+                            <td>0.04</td>
+                            <td>0.026</td>
+                        </tr>
+                        <tr>
+                            <td>DBSCAN</td>
+                            <td>0.56</td>
+                            <td>0.002</td>
+                            <td>0.012</td>
+                        </tr>
+                    </tbody>
+                </table></div>
+                <figcaption style="text-align: center; font-size: 0.95em; color: #555; margin-top: 8px;">
+                <strong>Table 2.</strong> Performance comparison across unsurpervised learning models
+                </figcaption>
+                <br>
+
+                <p>
+                    The supervised learning algorithms, including XGBoost, Logistic Regression, Random Forest applied on the KOI table all give us good results. The XGBoost and random forest algorithms are exceptionally good intermix of precision and AUC. This is more due to the good quality and information of the KOI table itself. The KOI table is the result of the efforts of the Kepler team; they use planet transit models to fit the raw light curves and carefully designed multiple methods to generate the final KOI table we see. Therefore, the supervised ML algorithms can easily identify false positives by simply looking at the range of values of the parameters, such as signal-to-noise ratio, transit duration, etc. 
+                </p>
+                <p>
+                    When using the light curve as the dataset, the unsupervised learning algorithms do not perform well. But CNN can still produce good precision>0.81, and even AUC >0.91. This is slightly lower than other algorithms applied to the KOI data, but already much better than the unsupervised learning methods. This is impressive as the light curve data does not contain any planet transit model information, but CNN can learn the pattern of the light curves and give us good results. We conclude that CNN is the most useful algorithm for the identification of false positives.
+                </p>
+                <!-- TODO: Table 3. Performance comparison across surpervised learning -->
+                 <div class="report-table" tabindex="0" role="region" aria-label="Report table"><table>
+                    <thead>
+                        <tr>
+                            <th>Model (Dataset)</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1 score</th>
+                            <th>AUC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>XGBoost (KOI)</td>
+                            <td>0.89</td>
+                            <td>0.85</td>
+                            <td>0.87</td>
+                            <td>0.95</td>
+                        </tr>
+                        <tr>
+                            <td>Logistic Reg (KOI)</td>
+                            <td>0.84</td>
+                            <td>0.55</td>
+                            <td>0.66</td>
+                            <td>0.79</td>
+                        </tr>
+                        <tr>
+                            <td>Random Forest (KOI)</td>
+                            <td>0.88</td>
+                            <td>0.88</td>
+                            <td>0.87</td>
+                            <td>0.95</td>
+                        </tr>
+                        <tr>
+                            <td><font color=red>CNN (Light Curve)</font></td>
+                            <td><font color=red>0.81</font></td>
+                            <td><font color=red>0.82</font></td>
+                            <td><font color=red>0.81</font></td>
+                            <td><font color=red>0.91</font></td>
+                        </tr>
+                    </tbody>
+                </table></div>
+                <figcaption style="text-align: center; font-size: 0.95em; color: #555; margin-top: 8px;">
+                <strong>Table 3.</strong> Performance comparison across surpervised learning models
+                </figcaption>
+
+
+                <h2>Next Steps</h2>
+                <p>In our next step, we first plan to implement the Random Forest model and evaluate how well it performs compared to our current results from other models, as well as existing research. After cleaning the dataset, features will be selected based on their significance, which is an estimation with physics knowledge. The data is then split into train and test datasets. The random tree forest model is first turned over a broad hyperparameter space, such as 600 random combinations, to first identify a rough range of good-performance parameters. It was then fine-tuned with the discovered parameters to find maximum accuracy.</p>
+                <p>More importantly, we plan to use the light curve data from the Kepler dataset. The reason for including the light curve data is that they keep all the raw planet transit information that the Kepler Object of Interest table does not fully keep. We will begin with data preprocessing, select the light curve data with fixed cadence, and slice them into 500-point segments with the deepest transit signal in the center. The labels are the same, which are “Candidate” or “False positive” for each row. We will then use our HDBSCAN model to test on the light curve data, after using PCA to reduce the parameters. This will give us a good intuition of how the data is structured.</p>
+                <p>Then, we plan to combine both the Kepler table data, which contains information from the planet, star, and also physical models used for fitting the parameters, and the raw information from the light curve, to train a supervised model for better identifying false positives. We will use neural networks for the training, start with CNN, and include transformers if necessary. We will test whether neural networks will give us higher accuracy and precision. Moreover, we will also test our neural network model on other datasets, including the TESS light curve data, to see if our model can migrate to other datasets without much data preprocessing. If we can achieve good results in the TESS dataset, then this will be a remarkable discovery.</p>
+
+                
+                <h2>Gantt Chart</h2>
+                <figure style="text-align: center; margin: 20px 0;">
+                <img 
+                    src="gantt-chart-2.png" 
+                    alt="Project Gantt Chart" 
+                    style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);"
+                >
+                </figure>
+                <h2>Contribution Table</h2>
+                <div class="report-table" tabindex="0" role="region" aria-label="Report table"><table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Midterm Contributions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jiapeng Gao</td>
+                            <td>Unsupervised learning: HDBSCAN. Light curves data preprocessing. Report writing and reviewing. </td>
+                        </tr>
+                        <tr>
+                            <td>Ruishu Cao</td>
+                            <td>Supervised learning: XGBoost, CNN. Report writing. GitHub Pages.</td>
+                        </tr>
+                        <tr>
+                            <td>Tanya Chauhan</td>
+                            <td>Supervised learning: Logistic Regression. Unsupervised learning: PCA, GMM, DBSCAN. Report writing. </td>
+                        </tr>
+                        <tr>
+                            <td>Melvin Ticiano Gao</td>
+                            <td> Supervised learning: Random Forest. Report writing, GitHub repository.</td>
+                        </tr>
+                        <tr>
+                            <td>Yishu Ji</td>
+                            <td>Supervised learning: XGBoost, CNN. Report writing. GitHub Pages.</td>
+                        </tr>
+                    </tbody>
+                </table></div>
+            </div>
+
+            <div class="content-box">
+                <h2>References</h2>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>[1] Mayor, Michel, and Didier Queloz. "A Jupiter-mass companion to a solar-type star."  <em>nature</em> 378.6555 (1995): 355-359.</li>
+                    <li>[2] Christiansen, Jessie L., et al. "The NASA Exoplanet Archive and Exoplanet Follow-up Observing Program: Data, Tools, and Usage." <em>arXiv preprint arXiv:2506.03299</em> (2025).</li>
+                    <li>[3] Choudhary, Anupma, et al. "Exoplanet Classification through Vision Transformers with Temporal Image Analysis." <em>arXiv preprint arXiv:2506.16597</em> (2025).</li>
+                    <!--<li>[4] Rafaih, Ayan Bin, and Zachary Murray. "Detecting False Positives With Derived Planetary Parameters: Experimenting with the KEPLER Dataset."  <em>arXiv preprint arXiv:2508.13801<em> (2025).</li>
+                     <li>[5] J.-O. Palacio-Niño and F. Berzal, "Evaluation metrics for unsupervised learning algorithms," <em>arXiv preprint arXiv:1905.05667</em>, 2019.</li>
+                    <li>[6] Xu, Dongkuan, and Yingjie Tian. "A Comprehensive Survey of Clustering Algorithms." <em>Annals of Data Science</em>, vol. 2, no. 2, 2015, pp. 165-193.</li>
+                    <li>[7] Karimi, Reihaneh, et al. "Machine Learning for Exoplanet Detection: A Comparative Analysis Using Kepler Data." <em>arXiv</em>, 2025, <a href="https://doi.org/10.48550/arXiv.2508.09689" target="_blank">https://doi.org/10.48550/arXiv.2508.09689</a></li>
+                    <li>[8] Airlangga, G. (2024). Exoplanet classification through machine learning: A comparative analysis of algorithms using Kepler data. <em>MALCOM: Indonesian Journal of Machine Learning and Computer Science, 4</em>(3), 753-763.</li> -->
+                    <li> [4] Rafaih, Ayan Bin, and Zachary Murray. "Detecting False Positives With Derived Planetary Parameters: Experimenting with the KEPLER Dataset." arXiv preprint arXiv:2508.13801 (2025).</li>
+                    <li> [5] L. McInnes, J. Healy, S. Astels, hdbscan: Hierarchical density based clustering In: Journal of Open Source Software, The Open Journal, volume 2, number 11. 2017</li>
+                    <li> [6] Castro-González, A., et al. "Mapping the exo-Neptunian landscape-A ridge between the desert and savanna." Astronomy & Astrophysics 689 (2024): A250.</li>
+                    <li> [7] Airlangga, G. (2024). Exoplanet classification through machine learning: A comparative analysis of algorithms using Kepler data. MALCOM: Indonesian Journal of Machine Learning and Computer Science, 4(3), 753–763</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            const scrollPosition = window.scrollY;
+            const heroHeight = document.querySelector('.hero').offsetHeight;
+            
+            if (scrollPosition > heroHeight * 0.3) {
+                document.body.classList.add('dimmed');
+            } else {
+                document.body.classList.remove('dimmed');
+            }
+        });
+
+        // Navigation active state handler
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get current page filename
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            
+            // Set active class based on current page
+            if (currentPage === 'index.html' || currentPage === '') {
+                document.getElementById('nav-proposal')?.classList.add('active');
+            } else if (currentPage === 'midterm.html') {
+                document.getElementById('nav-midterm')?.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exoplanet Classification Using Machine Learning - Proposal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; */
+            line-height: 1.25;
+            color: #e8e8e8;
+            background: #000;
+            overflow-x: hidden;
+            padding-top: 70px; /* Added for navbar */
+        }
+
+        /* Navigation Bar Styles - START */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(106, 159, 255, 0.3);
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .navbar-brand {
+            color: #fff;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-decoration: none;
+            text-shadow: 0 0 20px rgba(106, 159, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: #8aaeff;
+            text-shadow: 0 0 30px rgba(106, 159, 255, 0.9);
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 0;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-item {
+            margin: 0;
+        }
+
+        .navbar-link {
+            display: block;
+            padding: 25px 30px;
+            color: #d0e0ff;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .navbar-link:hover {
+            color: #fff;
+            background: rgba(106, 159, 255, 0.1);
+            border-bottom-color: #6a9fff;
+        }
+
+        .navbar-link.active {
+            color: #fff;
+            background: rgba(106, 159, 255, 0.2);
+            border-bottom-color: #6a9fff;
+            text-shadow: 0 0 15px rgba(106, 159, 255, 0.8);
+        }
+        /* Navigation Bar Styles - END */
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('../../assets/astro/milky-way-sky-inner-mongolia-2023.jpg') center center/cover no-repeat;
+            z-index: -2;
+            transition: filter 0.3s ease;
+        }
+
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 20, 0.1);
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            color: #fff;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(106, 159, 255, 0.8), 0 2px 10px rgba(0, 0, 0, 0.8);
+            animation: fadeInDown 1s ease;
+        }
+
+        .hero .subtitle {
+            color: #d0e0ff;
+            font-size: 1.5em;
+            font-style: italic;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        .hero .team {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .hero .team-member {
+            color: #fff;
+            font-size: 1.3em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .hero .team-member strong {
+            color: #8aaeff;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 0.9em;
+            font-style: normal;
+            animation: bounce 2s infinite;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        .content-section {
+            position: relative;
+            z-index: 1;
+            background: transparent;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .content-box {
+            /* background: rgba(0, 0, 0, 0.75); */
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(106, 159, 255, 0.2);
+        }
+
+        h2 {
+            /* color: #6a9fff; */
+            color: #11268f;
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #11268f;
+            padding-bottom: 8px;
+        }
+
+        h2:first-child {
+            margin-top: 0;
+        }
+
+        h3 {
+            /* color: #8aaeff; */
+            color: #2239af;
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-align: justify;
+            /* color: #2d2d2f; */
+            color: #000;
+        }
+
+        table {
+            width: 80%;
+            display: table;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+            /* margin: 20px 20px; */
+            /* background: rgba(20, 20, 40, 0.6); */
+            background: rgba(252, 252, 252, 0.768);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: rgba(3, 57, 156, 0.34);
+            /* color: #6a9fff; */
+            color: #000000;
+            padding: 5px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(106, 159, 255, 0.1);
+            color: #000000;
+            text-align: center;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* tr:hover {
+            background: rgba(106, 159, 255, 0.1);
+        } */
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: #2239af;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: #000;
+        }
+
+        .gantt-placeholder {
+            background: rgba(255, 253, 253, 0.6);
+            padding: 40px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            color: #a8c0e0;
+            font-style: italic;
+            border: 2px dashed rgba(106, 159, 255, 0.3);
+        }
+
+        .dimmed .background {
+            filter: blur(5px) brightness(0.9);
+        }
+
+        .dimmed .background-overlay {
+            background: rgba(0, 0, 20, 0.2);
+        }
+
+        a {
+            color: #2239af;
+            text-decoration: underline;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile responsive - START */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 120px;
+            }
+
+            .navbar-container {
+                flex-direction: column;
+                height: auto;
+                padding: 15px 20px;
+            }
+            
+            .navbar-brand {
+                margin-bottom: 10px;
+                font-size: 1.1em;
+            }
+            
+            .navbar-menu {
+                flex-direction: row;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .navbar-link {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar-link {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+        }
+        /* Mobile responsive - END */
+    </style>
+    <link rel="stylesheet" href="site-integration.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" aria-label="ExoplanetML project reports">
+        <div class="navbar-container">
+            <a href="../../index.html#exoplanetml" class="navbar-brand">← Jiapeng Gao · ExoplanetML</a>
+            <ul class="navbar-menu">
+                <li class="navbar-item">
+                    <a href="index.html" class="navbar-link active" id="nav-proposal" aria-current="page">Proposal</a>
+                </li>
+                <li class="navbar-item">
+                    <a href="midterm.html" class="navbar-link" id="nav-midterm">Midterm Report</a>
+                </li>
+                <li class="navbar-item">
+                    <a href="final.html" class="navbar-link" id="nav-final">Final Report</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="background"></div>
+    <div class="background-overlay"></div>
+
+    <div class="hero">
+        <h1>Machine Learning for Exoplanet Classification</h1>
+        <p class="subtitle">Proposal</p>
+        
+<!--         <p class="subtitle">Midterm Report</p> -->
+         
+        <p class="project-lead"><strong>Group Project Leader:</strong> Jiapeng Gao</p>
+        <div class="team">
+            <div class="team-member">
+                <strong>Team Members:</strong> Jiapeng Gao, Melvin Ticiano Gao, Ruishu Cao, Tanya Chauhan, Yishu Ji
+            </div>
+        </div>
+<!-- <div class="team">
+            <div class="team-member">
+                <strong>Domain Advisors:</strong> Dr. Gongjie Li, Dr. Songhu Wang
+            </div> 
+        </div> -->
+        <div class="team">
+            <div class="team-member">
+                <strong>Course:</strong> CS 7641 - Machine Learning
+            </div>
+            <div class="team-member">
+                <strong>Date:</strong> Fall 2025
+            </div>
+        </div>
+
+        <p class="project-photo-credit">Milky Way · Inner Mongolia · <time datetime="2023-08-13T00:16:14">13 August 2023 · 00:16:14</time> (camera time)<br>Photographed by Jiapeng Gao</p>
+        <div class="scroll-indicator">
+            ↓ Scroll Down ↓
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="container">
+            <div class="content-box">
+                <h2>Introduction/Background</h2>
+                <p>
+                    51 Pegasi b, the first exoplanet discovered around a main-sequence star in 1995 [1], surprised astronomers because it's a planet that does not look like any planet in our solar system. People call it a "hot Jupiter", based on its orbital period and mass.  This is not the only exotic exoplanet people have found. Since then, approximately 6,000 exoplanets [2] have been discovered, and many of them still lack counterparts to our solar system's planets. The "period, mass" classification scheme is straightforward, but it only accounts for two features of the planets. Until today, no standardized exoplanet classification scheme has been widely accepted. Therefore, we want to use unsupervised ML to create a standardized classification algorithm for exoplanets. 
+                </p>
+                <p>
+                    The main dataset we will use is the Kepler Objects of Interest (KOI) table. It is built on planet transit data from the Kepler telescope. The KOI database is a good start for our unsupervised learning. 
+                </p>
+                <p>
+                    It is also notable that the KOI dataset has classified planets as confirmed, candidate, and false positive. This is where we want the supervised learning model to work on. There has been extensive work on using ML, including CNNs and transformers[3][4], to identify false positives. We aim to reproduce and improve on these results.
+                </p>
+                <h3>Dataset Links</h3>
+                <ul>
+                    <li><a href="https://exoplanetarchive.ipac.caltech.edu/docs/Kepler_Data_Products_Overview.html#lc_rel" target="_blank">Kepler data products overview</a></li> 
+                    <li><a href="https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=cumulative" target="_blank">Kepler Objects of Interest (KOI) table</a></li>
+                    <li><a href="https://exoplanetarchive.ipac.caltech.edu/index.html" target="_blank">Exoplanet archive</a></li>
+                </ul>
+
+                <h2>Problem Definition</h2>
+                <p>
+                    How to use ML to discover subgroups of exoplanets? How can ML help identify more exoplanet candidates or false positives? The confirmation of exoplanets, and also the classification of exoplanets, has long been a subjective and case-by-case job. This calls for the use of ML algorithms to group planets by statistics when little physics prior knowledge can be provided, and identify false positives when subsequent observations are not yet available. 
+                </p>
+
+                <h2>Methods</h2>
+                
+                <h3>Data Preprocessing</h3>
+                <p>
+                   To prepare high-quality training and test data, we will follow a three-step process: data cleaning, data transformation, and data reduction.
+                </p>
+                <p>
+                    We will begin with a primary screening of the dataset, removing missing and irrelevant rows or columns, as well as duplicated records. 
+                    Next, we will transform the data. For categorical features, one-hot encoding will be applied. For numerical features, we will use standardized normalization to ensure consistent data scales and improve optimization efficiency during training.
+                    For the light curve data, we will slice the transit light curves into segments that contain only 500 points with fixed cadence. Since light curve data is high-dimensional, we will consider extracting key features (such as the median, mean, and standard deviation) to reduce dimensionality.
+                </p>
+
+                <h3>Unsupervised Machine Learning</h3>
+                <p>
+                    We plan to evaluate <strong>Gaussian Mixture Models (GMM) and DBSCAN</strong>. GMM is flexible and also works well for clusters of various shapes. DBSCAN is a density-based method that does not require a predefined number of clusters. 
+                </p>
+                <p>
+                    By comparing the different approaches, we aim to identify meaningful subgroups within the exoplanet dataset, as well as analyze the insights and characteristics of different clusters. 
+                </p>
+
+                <h3>Supervised Machine Learning</h3>
+                <p>
+                    The objective of the supervised machine learning method is to train a model capable of accurately classifying candidate exoplanets and false positives. This is a binary classification problem. We will evaluate <strong>Logistic Regression, Decision Tree, Random Forest, and Neural Networks</strong>. 
+                </p>
+                <p>
+                    Logistic regression is a simple yet robust classification algorithm. It can be used as the baseline for the classification problem. Tree-based methods can reveal feature importance and increase the model interpretability. Neural networks offer high flexibility of discovering patterns in high-dimensional data. It can be powerful for enhancing model accuracy. Moreover, with the neural networks, we will be able to directly use light curve data as the input and train the model to identify false positives.
+                </p>
+                <p>
+                    Exploring these algorithms enables us to uncover hidden characteristics that differentiate observed exoplanets from false positives.
+                </p>
+
+                <h2>Potential Results and Discussion</h2>
+                
+                <h3>Clustering (Unsupervised) Evaluation Metrics</h3>
+                <p>
+                    We will use the internal evaluation metrics[5][6], which assess the quality of clustering based solely on the data itself, such as the Dunn Index (identifies cluster tightness), Silhouette Coefficient (evaluates similarity of an object to its cluster and to other clusters), and Davies-Bouldin Index (evaluates the similarity between clusters and how sparse/distinct they are to each other).
+                </p>
+                 <p>Expected results: Recover basic classification for exoplanets, potentially discover subgroups.</p>
+
+
+                <h3>Supervised Learning Metrics</h3>
+                <p>
+                    In supervised learning evaluation, a labeled dataset is available, allowing for a direct comparison between the predicted and true labels [7][8]. The model's performance is assessed using a variety of metrics, including Accuracy, Recall (or sensitivity), Precision, F1 score, ROC-AUC and the Confusion Matrix.
+                </p>
+                <p>Expected results: Reaching a 0.8 accuracy for the best model.</p>
+
+
+                <h2>Gantt Chart</h2>
+                <div style="text-align: center; margin: 20px 0;">
+                    <img src="gantt-chart.png" alt="Project Gantt Chart" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
+                </div>
+
+                <h2>Contribution Table</h2>
+                <div class="report-table" tabindex="0" role="region" aria-label="Report table"><table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Proposal Contributions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jiapeng Gao</td>
+                            <td>Introduction, Problem definition, Proposal writing, Presentation</td>
+                        </tr>
+                        <tr>
+                            <td>Ruishu Cao</td>
+                            <td>Methods, Website, Proposal writing, Presentation</td>
+                        </tr>
+                        <tr>
+                            <td>Tanya Chauhan</td>
+                            <td>Evaluation metrics, Proposal writing, Presentation</td>
+                        </tr>
+                        <tr>
+                            <td>Melvin Ticiano Gao</td>
+                            <td>Evaluation metrics, Video recording and editing, Proposal writing, Presentation</td>
+                        </tr>
+                        <tr>
+                            <td>Yishu Ji</td>
+                            <td>Methods, Website, Proposal writing, Presentation</td>
+                        </tr>
+                    </tbody>
+                </table></div>
+            </div>
+
+            <div class="content-box">
+                <h2>References</h2>
+                <ul style="list-style-type: none; margin-left: 0;">
+                    <li>[1] Mayor, Michel, and Didier Queloz. "A Jupiter-mass companion to a solar-type star."  <em>nature</em> 378.6555 (1995): 355-359.</li>
+                    <li>[2] Christiansen, Jessie L., et al. "The NASA Exoplanet Archive and Exoplanet Follow-up Observing Program: Data, Tools, and Usage." <em>arXiv preprint arXiv:2506.03299</em> (2025).</li>
+                    <li>[3] Choudhary, Anupma, et al. "Exoplanet Classification through Vision Transformers with Temporal Image Analysis." <em>arXiv preprint arXiv:2506.16597</em> (2025).</li>
+                    <li>[4] Rafaih, Ayan Bin, and Zachary Murray. "Detecting False Positives With Derived Planetary Parameters: Experimenting with the KEPLER Dataset."  <em>arXiv preprint arXiv:2508.13801<em> (2025).</li>
+                    <li>[5] J.-O. Palacio-Niño and F. Berzal, "Evaluation metrics for unsupervised learning algorithms," <em>arXiv preprint arXiv:1905.05667</em>, 2019.</li>
+                    <li>[6] Xu, Dongkuan, and Yingjie Tian. "A Comprehensive Survey of Clustering Algorithms." <em>Annals of Data Science</em>, vol. 2, no. 2, 2015, pp. 165-193.</li>
+                    <li>[7] Karimi, Reihaneh, et al. "Machine Learning for Exoplanet Detection: A Comparative Analysis Using Kepler Data." <em>arXiv</em>, 2025, <a href="https://doi.org/10.48550/arXiv.2508.09689" target="_blank">https://doi.org/10.48550/arXiv.2508.09689</a></li>
+                    <li>[8] Airlangga, G. (2024). Exoplanet classification through machine learning: A comparative analysis of algorithms using Kepler data. <em>MALCOM: Indonesian Journal of Machine Learning and Computer Science, 4</em>(3), 753-763.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            const scrollPosition = window.scrollY;
+            const heroHeight = document.querySelector('.hero').offsetHeight;
+            
+            if (scrollPosition > heroHeight * 0.3) {
+                document.body.classList.add('dimmed');
+            } else {
+                document.body.classList.remove('dimmed');
+            }
+        });
+
+        // Navigation active state handler
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get current page filename
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            
+            // Set active class based on current page
+            if (currentPage === 'index.html' || currentPage === '') {
+                document.getElementById('nav-proposal')?.classList.add('active');
+            } else if (currentPage === 'midterm.html') {
+                document.getElementById('nav-midterm')?.classList.add('active');
+            } else if (currentPage === 'final.html') {
+                document.getElementById('nav-final')?.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

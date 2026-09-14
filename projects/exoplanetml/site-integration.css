@@ -1,0 +1,42 @@
+/* Small integration and accessibility adjustments to the supplied project reports. */
+body { line-height: 1.55; overflow-x: visible; }
+.navbar-container { min-height: 70px; height: auto; gap: 12px; }
+.navbar-brand { font-size: 1.1rem; white-space: nowrap; }
+.navbar-menu { flex-wrap: wrap; }
+.navbar-link { padding: 22px 18px; font-size: 1rem; }
+.hero { position: relative; height: auto; min-height: calc(100svh - 70px); padding: 70px 24px 140px; gap: 22px; }
+.hero h1 { max-width: 1050px; font-size: clamp(2rem, 4.5vw, 3.5rem); line-height: 1.15; margin: 0; }
+.hero .subtitle { margin: 0; text-align: center; }
+.hero .team { gap: 10px 30px; max-width: 1000px; }
+.hero .team-member { font-size: 1.05rem; }
+.hero .project-lead { margin: 0; color: #fff; text-align: center; font-size: 1.1rem; }
+.hero .project-lead strong { color: #b8cdff; }
+.hero .project-photo-credit { position: absolute; bottom: 60px; margin: 0; padding: 0 16px; color: #e4e6ed; font-size: 12px; text-align: center; line-height: 1.6; }
+.hero .scroll-indicator { bottom: 22px; white-space: nowrap; }
+.background-overlay { background: rgba(0, 0, 20, .4); }
+.content-box { background: rgba(255, 255, 255, .92); overflow-wrap: anywhere; }
+.content-box p { text-align: left; }
+.content-box img { height: auto; }
+.content-box a { overflow-wrap: anywhere; }
+.report-table { max-width: 100%; overflow-x: auto; margin: 20px 0; }
+.report-table table { margin-top: 0 !important; margin-bottom: 0 !important; }
+a:focus-visible, .report-table:focus-visible { outline: 2px solid #6a9fff; outline-offset: 4px; }
+@media (max-width: 768px) {
+  body { padding-top: 0; }
+  .navbar { position: relative; }
+  .navbar-container { padding: 12px 16px 0; gap: 0; }
+  .navbar-brand { margin-bottom: 8px; }
+  .navbar-menu { justify-content: center; }
+  .navbar-link { padding: 12px; font-size: .9rem; }
+  .hero { min-height: calc(100svh - 112px); padding: 48px 20px 150px; }
+  .container { padding: 24px 12px; }
+  .content-box { padding: 24px 18px; }
+  .content-box h2 { font-size: 1.5rem; }
+  .content-box h3 { font-size: 1.25rem; }
+  .content-box p, .content-box li { font-size: 1rem; }
+  .content-box img { max-width: 100% !important; }
+  .report-table table { min-width: 560px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
